@@ -38,6 +38,7 @@ class YamlDocumentTest {
     void load() throws IOException {
         // Create
         YamlDocument file = createFile();
+
         // Load
         file.reload(createStream("m: 2\nn: x"));
         // Assert

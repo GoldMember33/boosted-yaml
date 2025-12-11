@@ -26,7 +26,9 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -311,6 +313,41 @@ class SectionTest {
         assertEquals("abc", file.getString("a.a.b"));
         assertEquals(Alphabet.B, file.getEnum("c", Alphabet.class));
         assertEquals(9, file.getInt(Route.from(4, 6)));
+    }
+
+    @Test
+    void setIfAbsent() throws IOException {
+        // Create file
+        YamlDocument file = createFile(GeneralSettings.builder().setKeyFormat(GeneralSettings.KeyFormat.OBJECT).build());
+        // Set if absent
+        file.setIfAbsent(Route.fromString("x"), 10);
+        file.setIfAbsent("y.b", "def");
+        file.setIfAbsent(Route.from(7), true);
+        file.setIfAbsent("d", Alphabet.C);
+        file.setIfAbsent(Route.from(8, 9), 10);
+        file.setIfAbsent("settings.shop.stone-price", 10.0d);
+        file.setIfAbsent("settings.debug.enabled", true);
+        file.setIfAbsent("settings.world-names.list", Arrays.asList("world", "world_nether", "world_the_end"));
+
+        // file.setIfAbsent("settings.solve.sum-float-numbers", 0.2 + 0.1);
+        BigDecimal sum = BigDecimal.valueOf(0.2).add(BigDecimal.valueOf(0.1));
+        file.setIfAbsent("settings.solve.sum-big-decimal-numbers", sum);
+        file.setIfAbsent("settings.solve.sum-int-numbers", 2 + 1);
+
+        // Assert
+        assertEquals(5, file.getInt("x"));
+        assertEquals("abc", file.getString("y.b"));
+        assertEquals(false, file.getBoolean(Route.from(7)));
+        assertEquals(Alphabet.C, file.getEnum("d", Alphabet.class));
+        assertEquals(10, file.getInt(Route.from(8, 9)));
+        assertEquals(10.0d, file.getDouble("settings.shop.stone-price"));
+        assertEquals(true, file.getBoolean("settings.debug.enabled"));
+        assertEquals(Arrays.asList("world", "world_nether", "world_the_end"), file.getList("settings.world-names.list"));
+
+        //assertEquals(0.3d, file.getDouble("settings.solve.sum-float-numbers"));
+        assertEquals(sum.doubleValue(), file.getDouble("settings.solve.sum-big-decimal-numbers"));
+        assertEquals(3, file.getInt("settings.solve.sum-int-numbers"));
+
     }
 
     @Test

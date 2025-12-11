@@ -1050,7 +1050,139 @@ public class Section extends Block<Map<Object, Block<?>>> {
      * @param value the value to set
      */
     public void set(@NotNull String route, @Nullable Object value) {
-        traverse(route, true).ifPresent(reference -> reference.parent.setInternal(reference.key, value));
+        this.traverse(route, true).ifPresent(reference -> reference.parent.setInternal(reference.key, value));
+    }
+
+    /**
+     * Sets the given value at the given route in this section only if there is no value already present at that route.
+     * If there are sections missing to the route where the object should be set, they are created along the way.
+     * <p>
+     * As the value to set, you can give instances of <b>anything</b>, with the following warnings:
+     * <ul>
+     *     <li><code>null</code>: valid value (please use {@link #remove(Route)} to remove entries),</li>
+     *     <li><b>non-root</b> {@link Section}: the given section will be <i>moved</i> here (including comments, it will be deleted from the previous location),</li>
+     *     <li>any other {@link Block}: the given block will be <i>pasted</i> here (including comments, <b>!!will keep reference to the previous location, delete it manually from there!!</b>),</li>
+     *     <li>{@link Map}: a section will be created and initialized by the contents of the given map and comments of
+     *     the previous block at that key (if any); where the map must only contain raw content (e.g. no {@link Block}
+     *     instances; please see {@link #Section(YamlDocument, Section, Route, Block, Map)} for more information),</li>
+     * </ul>
+     * <p>
+     * If there's any entry at the given route, it's comments are kept and assigned to the new entry (does not apply
+     * when the value is an instance of {@link Block}, in which case comments from the block are preserved).
+     * <p>
+     * <b>Attempt to set an instance of {@link Section} whose call to {@link #isRoot()} returns <code>true</code> is
+     * considered illegal and will result in an {@link IllegalArgumentException}. Similarly, attempting to move sections
+     * between two different files with different key formats will result in such exception.</b>
+     *
+     * @param route the route to set at
+     * @param value the value to set
+     */
+    public void setIfAbsent(@NotNull Route route, @Nullable Object value) {
+        this.setIfAbsent(route, value, null);
+    }
+
+    /**
+     * Sets the given value at the given route in this section only if there is no value already present at that route.
+     * If there are sections missing to the route where the object should be set, they are created along the way.
+     * <p>
+     * As the value to set, you can give instances of <b>anything</b>, with the following warnings:
+     * <ul>
+     *     <li><code>null</code>: valid value (please use {@link #remove(Route)} to remove entries),</li>
+     *     <li><b>non-root</b> {@link Section}: the given section will be <i>moved</i> here (including comments, it will be deleted from the previous location),</li>
+     *     <li>any other {@link Block}: the given block will be <i>pasted</i> here (including comments, <b>!!will keep reference to the previous location, delete it manually from there!!</b>),</li>
+     *     <li>{@link Map}: a section will be created and initialized by the contents of the given map and comments of
+     *     the previous block at that key (if any); where the map must only contain raw content (e.g. no {@link Block}
+     *     instances; please see {@link #Section(YamlDocument, Section, Route, Block, Map)} for more information),</li>
+     * </ul>
+     * <p>
+     * If there's any entry at the given route, it's comments are kept and assigned to the new entry (does not apply
+     * when the value is an instance of {@link Block}, in which case comments from the block are preserved).
+     * <p>
+     * <b>Attempt to set an instance of {@link Section} whose call to {@link #isRoot()} returns <code>true</code> is
+     * considered illegal and will result in an {@link IllegalArgumentException}. Similarly, attempting to move sections
+     * between two different files with different key formats will result in such exception.</b>
+     *
+     * @param route the route to set at
+     * @param value the value to set
+     * @param comments the comments to set before the entry if it is set
+     */
+    public void setIfAbsent(@NotNull Route route, @Nullable Object value, List<String> comments) {
+
+        if (comments != null && comments.isEmpty()) {
+            this.setComments(comments);
+        }
+
+        this.traverse(route, true).ifPresent(reference -> {
+            if (reference.parent.getStoredValue().get(reference.key) == null) {
+                reference.parent.setInternal(reference.key, value);
+            }
+        });
+    }
+
+    /**
+     * Sets the given value at the given route in this section only if there is no value already present at that route.
+     * If there are sections missing to the route where the object should be set, they are created along the way.
+     * <p>
+     * As the value to set, you can give instances of <b>anything</b>, with the following warnings:
+     * <ul>
+     *     <li><code>null</code>: valid value (please use {@link #remove(Route)} to remove entries),</li>
+     *     <li><b>non-root</b> {@link Section}: the given section will be <i>moved</i> here (including comments, it will be deleted from the previous location),</li>
+     *     <li>any other {@link Block}: the given block will be <i>pasted</i> here (including comments, <b>!!will keep reference to the previous location, delete it manually from there!!</b>),</li>
+     *     <li>{@link Map}: a section will be created and initialized by the contents of the given map and comments of
+     *     the previous block at that key (if any); where the map must only contain raw content (e.g. no {@link Block}
+     *     instances; please see {@link #Section(YamlDocument, Section, Route, Block, Map)} for more information),</li>
+     * </ul>
+     * <p>
+     * If there's any entry at the given route, it's comments are kept and assigned to the new entry (does not apply
+     * when the value is an instance of {@link Block}, in which case comments from the block are preserved).
+     * <p>
+     * <b>Attempt to set an instance of {@link Section} whose call to {@link #isRoot()} returns <code>true</code> is
+     * considered illegal and will result in an {@link IllegalArgumentException}. Similarly, attempting to move sections
+     * between two different files with different key formats will result in such exception.</b>
+     *
+     * @param route the route to set at
+     * @param value the value to set
+     */
+    public void setIfAbsent(@NotNull String route, @Nullable Object value) {
+        this.setIfAbsent(route, value, null);
+    }
+
+    /**
+     * Sets the given value at the given route in this section only if there is no value already present at that route.
+     * If there are sections missing to the route where the object should be set, they are created along the way.
+     * <p>
+     * As the value to set, you can give instances of <b>anything</b>, with the following warnings:
+     * <ul>
+     *     <li><code>null</code>: valid value (please use {@link #remove(Route)} to remove entries),</li>
+     *     <li><b>non-root</b> {@link Section}: the given section will be <i>moved</i> here (including comments, it will be deleted from the previous location),</li>
+     *     <li>any other {@link Block}: the given block will be <i>pasted</i> here (including comments, <b>!!will keep reference to the previous location, delete it manually from there!!</b>),</li>
+     *     <li>{@link Map}: a section will be created and initialized by the contents of the given map and comments of
+     *     the previous block at that key (if any); where the map must only contain raw content (e.g. no {@link Block}
+     *     instances; please see {@link #Section(YamlDocument, Section, Route, Block, Map)} for more information),</li>
+     * </ul>
+     * <p>
+     * If there's any entry at the given route, it's comments are kept and assigned to the new entry (does not apply
+     * when the value is an instance of {@link Block}, in which case comments from the block are preserved).
+     * <p>
+     * <b>Attempt to set an instance of {@link Section} whose call to {@link #isRoot()} returns <code>true</code> is
+     * considered illegal and will result in an {@link IllegalArgumentException}. Similarly, attempting to move sections
+     * between two different files with different key formats will result in such exception.</b>
+     *
+     * @param route the route to set at
+     * @param value the value to set
+     * @param comments the comments to set before the entry if it is set
+     */
+    public void setIfAbsent(@NotNull String route, @Nullable Object value, List<String> comments) {
+
+        if (comments != null && comments.isEmpty()) {
+            this.setComments(comments);
+        }
+
+        traverse(route, true).ifPresent(reference -> {
+            if (reference.parent.getStoredValue().get(reference.key) == null) {
+                reference.parent.setInternal(reference.key, value);
+            }
+        });
     }
 
     /**
@@ -4852,5 +4984,4 @@ public class Section extends Block<Map<Object, Block<?>>> {
     public List<Map<?, ?>> getMapList(@NotNull String route) {
         return getOptionalMapList(route).orElseGet(() -> canUseDefaults() ? defaults.getMapList(route) : root.getGeneralSettings().getDefaultList());
     }
-
 }
